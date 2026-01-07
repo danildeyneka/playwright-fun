@@ -1,0 +1,24 @@
+{
+  "name": "auto-hh",
+  "version": "1.0.0",
+  "author": "Danila Deyneka",
+  "description": "Скрипт для автооткликов на hh",
+  "main": "scripts/start.ts",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "init": "node --loader ts-node/esm scripts/save-hh-session.ts",
+    "start": "node --loader ts-node/esm scripts/start.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^25.0.3",
+    "playwright": "^1.57.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
