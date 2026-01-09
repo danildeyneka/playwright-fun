@@ -7,11 +7,11 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "init": "node --loader ts-node/esm scripts/save-hh-session.ts",
+    "init": "npx playwright install && $npm_execpath run renew-cookie && $npm_execpath run start",
+    "renew-cookie": "node --loader ts-node/esm scripts/save-hh-session.ts",
     "start": "node --loader ts-node/esm scripts/start.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest",
     "@types/node": "^25.0.3",
     "playwright": "^1.57.0",
     "ts-node": "^10.9.2",
