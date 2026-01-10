@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "init": "npx playwright install && $npm_execpath run renew-cookie && $npm_execpath run start",
-    "renew-cookie": "node --loader ts-node/esm scripts/save-hh-session.ts",
+    "renew-cookie": "node --loader ts-node/esm scripts/save-hh-session.ts && $npm_execpath run start",
     "start": "node --loader ts-node/esm scripts/start.ts"
   },
   "devDependencies": {

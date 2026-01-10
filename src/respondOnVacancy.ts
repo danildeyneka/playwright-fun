@@ -7,53 +7,58 @@ import { ResponseStatus, STATUSES } from './types.ts';
 async function respond(page: Page): Promise<ResponseStatus> {
 	await page.waitForLoadState('domcontentloaded');
 	
-	// откликаемся на вакансию
-	const responseBtn = page.locator(
-		'[data-qa="vacancy-response-link-top"], [data-qa="vacancy-response-link-bottom"], [data-qa="vacancy-view-link-reply"]'
-	).first();
-	
-	if (!(await responseBtn.isVisible())) {
-		console.log('Кнопка отклика не найдена, проверь селекторы');
-		return STATUSES.FAILURE;
-	}
-	await responseBtn.click();
-	
-	// скрываем попап другой страны
-	const otherCountryBtn = page.locator('[data-qa="relocation-warning-confirm"]').first();
-	if (await otherCountryBtn.count())
-	await otherCountryBtn.waitFor({ state: 'visible', timeout: 2000 }).then(() => {
-		otherCountryBtn.click();
-		sleepAbit();
-	});
-	
-	// заполняем и отправляем сопровод
-	const coverLetterInput = page.locator('[data-qa="textarea-native-wrapper"] textarea').first();
-	await coverLetterInput.waitFor({ state: 'visible', timeout: 2000 }).then(() => {
-		coverLetterInput.fill(COVER_LETTER);
-		sleepAbit();
-	}).catch((e) => console.log('Кнопка не найдена, это опросник! 1', e));
-	
-	const coverLetterBtn = page.locator('[data-qa="vacancy-response-letter-submit"], [data-qa="vacancy-response-submit-popup"]').first();
-	await coverLetterBtn.waitFor({ state: 'visible', timeout: 2000 }).then(() => {
-		coverLetterBtn.click();
-		sleep();
-	}).catch((e) => console.log('Кнопка не найдена, это опросник! 2', e));
-	
 	// скрываем вакансию если нужно, важно сделать это перед откликом
-	if (AUTO_HIDE_SUCCESSFUL_VACANCY) {
+	if (!AUTO_HIDE_SUCCESSFUL_VACANCY) {
 		const moreDataBtn = page.locator('[data-qa="vacancy__more-actions"]').first();
 		await moreDataBtn.waitFor({
 			state: 'visible',
-			timeout: 2000
+			timeout: 3000
 		}).then(() => {
 			moreDataBtn.click();
 			sleepAbit();
 		});
 		
-		await page.locator('[data-qa="vacancy__blacklist-menu-add-vacancy"]').first().click({timeout: 3000});
+		await page.locator('[data-qa="vacancy__blacklist-menu-add-vacancy"]').first().click({ timeout: 3000 });
+		console.log('Успешное скрытие вакансии');
 	}
 	
-	console.log('========== УСПЕШНЫЙ ОТКЛИК');
+	// откликаемся на вакансию
+	const responseBtn = page.locator(
+		'[data-qa="vacancy-response-link-top"], [data-qa="vacancy-response-link-bottom"], [data-qa="vacancy-view-link-reply"]'
+	).first();
+	
+	if (!(await responseBtn.isVisible({ timeout: 3000 }))) {
+		console.log('Кнопка отклика не найдена, проверь селекторы');
+		return STATUSES.FAILURE;
+	}
+	await responseBtn.click();
+	await sleepAbit();
+	
+	// скрываем попап другой страны
+	const otherCountryBtn = page.locator('[data-qa="relocation-warning-confirm"]').first();
+	console.log(1);
+	await otherCountryBtn.click().catch(() => false);
+	console.log(2);
+	await sleepAbit();
+	
+	// заполняем и отправляем сопровод
+	const coverLetterInput = page.locator('[data-qa="textarea-native-wrapper"] textarea').first();
+	console.log(3);
+	await coverLetterInput.waitFor({ state: 'visible', timeout: 1500 });
+	
+	await coverLetterInput.fill(COVER_LETTER);
+	await sleepAbit();
+	
+	const coverLetterBtn = page.locator('[data-qa="vacancy-response-letter-submit"], [data-qa="vacancy-response-submit-popup"]').first();
+	await coverLetterBtn.waitFor({ state: 'visible', timeout: 1500 });
+	await coverLetterBtn.click();
+	await sleepAbit();
+	
+	const isSuccessful = page.locator('div.vacancy-actions_responded').first();
+	if (!await isSuccessful.isVisible({timeout: 3000})) {
+		throw Error('Опросник')
+	}
+	
 	return STATUSES.SUCCESS;
 }
 
@@ -68,13 +73,14 @@ export async function respondToVacancy(context: BrowserContext, url: string): Pr
 		});
 		status = await respond(page);
 	} catch (e) {
-		console.error('Ошибка при отклике на вакансию', url, e);
+		console.log('Ошибка при отклике на вакансию, это опросник!', e);
+		status = STATUSES.FAILURE;
 	} finally {
 		if (status === STATUSES.SUCCESS) { // TODO сделать для всех
-			await page.close().catch(() => {
-			});
+			await page.close();
 		}
 	}
+	console.log('Завершена обработка вакансии - возвращаю статус - ' + status);
 	
 	return status;
 }
