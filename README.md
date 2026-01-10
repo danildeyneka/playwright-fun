@@ -1,13 +1,36 @@
 # auto-hh
 
-Install dependencies:
+## 0. Установите node v20+ LTS (https://nodejs.org/en/download)
+
+## 1. Установите зависимости: (npm / yarn)
 
 ```bash
-yarn install
+npm install
 ```
 
-Prepare cookie:
+## 2. Настройте params.ts
+
+**VACANCIES_LIST** - ссылка на вашу персонализированную подборку вакансий
+**COVER_LETTER** - универсальное сопроводительное письмо
+**AUTO_HIDE_SUCCESSFUL_VACANCY** - флаг скрывания вакансии после успешного отклика (чтобы не дублировались в поиске), **true(вкл по умолчанию) / false**
+
+## 3. Инициализируйте проект (автоотклики запустятся автоматически)
 
 ```bash
-yarn run init
+npm run init
 ```
+
+## 4. Для повторных запусков автооткликов после инициализации используйте команду
+
+```bash
+npm run start
+```
+
+## 5. Если протухнет сессия hh (выйдет уведомление), запустите следующую команду 
+
+
+```bash
+npm run renew-cookie
+```
+
+<details><summary>P.S.</summary> бороться и автоотказами можно только автооткликами</details>
