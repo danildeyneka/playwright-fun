@@ -3,24 +3,9 @@ import { AUTO_HIDE_SUCCESSFUL_VACANCY, COVER_LETTER } from '../params.ts';
 import { sleep, sleepAbit } from './sleep.ts';
 import { ResponseStatus, STATUSES } from './types.ts';
 
+// страница открывается для фиксации "живой" активности
 async function respond(page: Page): Promise<ResponseStatus> {
 	await page.waitForLoadState('domcontentloaded');
-	
-	// скрываем вакансию если нужно, важно сделать это перед откликом
-	if (AUTO_HIDE_SUCCESSFUL_VACANCY) {
-		const moreDataBtn = page.locator('[data-qa="vacancy__more-actions"]').first();
-		await moreDataBtn.waitFor({
-			state: 'visible',
-			timeout: 2000
-		}).then(() => {
-			moreDataBtn.click();
-			sleepAbit();
-		});
-		
-		await page.locator('[data-qa="vacancy__blacklist-menu-add-vacancy"]').first().click({timeout: 3000});
-	}
-	
-	await sleep();
 	
 	// откликаемся на вакансию
 	const responseBtn = page.locator(
@@ -41,29 +26,33 @@ async function respond(page: Page): Promise<ResponseStatus> {
 		sleepAbit();
 	});
 	
-	// await closePopup(page);
-	
 	// заполняем и отправляем сопровод
 	const coverLetterInput = page.locator('[data-qa="textarea-native-wrapper"] textarea').first();
 	await coverLetterInput.waitFor({ state: 'visible', timeout: 2000 }).then(() => {
 		coverLetterInput.fill(COVER_LETTER);
 		sleepAbit();
-	});
+	}).catch((e) => console.log('Кнопка не найдена, это опросник! 1', e));
 	
 	const coverLetterBtn = page.locator('[data-qa="vacancy-response-letter-submit"], [data-qa="vacancy-response-submit-popup"]').first();
 	await coverLetterBtn.waitFor({ state: 'visible', timeout: 2000 }).then(() => {
 		coverLetterBtn.click();
 		sleep();
-	}).catch((e) => console.log('Кнопка не найдена, это опросник!', e));
+	}).catch((e) => console.log('Кнопка не найдена, это опросник! 2', e));
 	
-	// const extraStep = page.locator(
-	// 	'[data-qa="questionary-form"], [data-qa="vacancy-response-extra-step"], [data-qa="vacancy-quick-response-questions"]'
-	// );
-	// if (await extraStep.isVisible().catch(() => false)) {
-	// 	return STATUSES.OTHER;
-	// }
-	//
-	// Если ни успеха, ни анкеты — считаем ошибкой
+	// скрываем вакансию если нужно, важно сделать это перед откликом
+	if (AUTO_HIDE_SUCCESSFUL_VACANCY) {
+		const moreDataBtn = page.locator('[data-qa="vacancy__more-actions"]').first();
+		await moreDataBtn.waitFor({
+			state: 'visible',
+			timeout: 2000
+		}).then(() => {
+			moreDataBtn.click();
+			sleepAbit();
+		});
+		
+		await page.locator('[data-qa="vacancy__blacklist-menu-add-vacancy"]').first().click({timeout: 3000});
+	}
+	
 	console.log('========== УСПЕШНЫЙ ОТКЛИК');
 	return STATUSES.SUCCESS;
 }
@@ -75,7 +64,7 @@ export async function respondToVacancy(context: BrowserContext, url: string): Pr
 	try {
 		await page.goto(url, {
 			waitUntil: 'domcontentloaded',
-			timeout: 60000
+			timeout: 6000
 		});
 		status = await respond(page);
 	} catch (e) {
