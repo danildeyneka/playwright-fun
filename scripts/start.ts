@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'node:path';
 import { chromium } from 'playwright';
-import { buildSearchUrl } from '../src/buildSearchUrl.ts';
+import { VACANCIES_LIST } from '../params';
 import { checkEnv } from '../src/checkEnv.ts';
 import { getTimeStamp } from '../src/getTimeStamp.ts';
 import { getVacanciesList } from '../src/getVacanciesList.ts';
@@ -32,10 +32,11 @@ async function main() {
 	// Проверка авторизации
 	// await checkAuth(page, browser)
 	
-	const MAX_PAGES = 5;
+	const manualVacancies = [];
 	
-	for (let pageIndex = 0; pageIndex < MAX_PAGES; pageIndex++) {
-		const searchUrl = buildSearchUrl(pageIndex);
+	// максимально откликнуться можно 200 раз, парсим страницы с учетом вакансий-опросников
+	for (let i = 0; i < 3; i++) {
+		const searchUrl = `${VACANCIES_LIST}&items_on_page=100`;
 		
 		await page.goto(searchUrl, {
 			waitUntil: 'domcontentloaded',
@@ -50,7 +51,6 @@ async function main() {
 		
 		for (const vUrl of vacancyUrls) {
 			const page = await context.newPage();
-			const manualVacancies = [];
 			
 			try {
 				await page.goto(vUrl, {
@@ -70,22 +70,19 @@ async function main() {
 			} catch (e) {
 				if (!isShuttingDown) console.log('Неизвестная ошибка - ', e);
 			} finally {
-				if (manualVacancies.length) {
-					const date = getTimeStamp();
-					await fs.mkdir(path.join(process.cwd(), 'manual'), { recursive: true });
-					const outputPath = path.join(process.cwd(), 'manual', `list-${date}.json`);
-					await fs.writeFile(outputPath, JSON.stringify(manualVacancies, null, 2), 'utf-8');
-				}
-				
 				await page.close();
 			}
 		}
 		
-		console.log('\n=== Финальный отчёт ===');
-		console.log('Успешных откликов: ', globalSuccess);
-		console.log('Опросники: ', globalFail, '\n');
+		await page.reload();
 	}
 	
+	if (manualVacancies.length) {
+		const date = getTimeStamp();
+		await fs.mkdir(path.join(process.cwd(), 'manual'), { recursive: true });
+		const outputPath = path.join(process.cwd(), 'manual', `list-${date}.json`);
+		await fs.writeFile(outputPath, JSON.stringify(manualVacancies, null, 2), 'utf-8');
+	}
 	await browser.close();
 }
 
@@ -93,8 +90,9 @@ main()
 	.catch((e) => {
 		if (!isShuttingDown) {
 			console.error('Фатальная ошибка : ', e);
-			console.log('\n=== Финальный отчёт ===');
-			console.log('Успешных откликов: ', globalSuccess);
-			console.log('Опросники: ', globalFail, '\n');
 		}
-	});
+	}).finally(() => {
+	console.log('\n=== Финальный отчёт ===');
+	console.log('Успешных откликов: ', globalSuccess);
+	console.log('Опросники: ', globalFail, '\n');
+});
