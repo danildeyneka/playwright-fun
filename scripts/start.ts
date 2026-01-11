@@ -1,6 +1,9 @@
+import * as fs from 'fs/promises';
+import * as path from 'node:path';
 import { chromium } from 'playwright';
 import { buildSearchUrl } from '../src/buildSearchUrl.ts';
 import { checkEnv } from '../src/checkEnv.ts';
+import { getTimeStamp } from '../src/getTimeStamp.ts';
 import { getVacanciesList } from '../src/getVacanciesList.ts';
 import { respondOnVacancy } from '../src/respondOnVacancy.ts';
 import { STATUSES } from '../src/types.ts';
@@ -46,8 +49,8 @@ async function main() {
 		}
 		
 		for (const vUrl of vacancyUrls) {
-			// console.log('→ Отклик на вакансию:', vUrl);
 			const page = await context.newPage();
+			const manualVacancies = [];
 			
 			try {
 				await page.goto(vUrl, {
@@ -56,34 +59,42 @@ async function main() {
 				});
 				const response = await respondOnVacancy(page);
 				
-				if (response.status === STATUSES.SUCCESS) {
-					globalSuccess++;
-				} else {
-					
-					// здесь собирать
+				if (response.status === STATUSES.FAILURE) {
+					manualVacancies.push(response.data);
 					
 					globalFail++;
+				} else {
+					globalSuccess++;
 				}
 				
 			} catch (e) {
-				console.log('Неизвестная ошибка - ', e);
+				if (!isShuttingDown) console.log('Неизвестная ошибка - ', e);
 			} finally {
+				if (manualVacancies.length) {
+					const date = getTimeStamp();
+					await fs.mkdir(path.join(process.cwd(), 'manual'), { recursive: true });
+					const outputPath = path.join(process.cwd(), 'manual', `list-${date}.json`);
+					await fs.writeFile(outputPath, JSON.stringify(manualVacancies, null, 2), 'utf-8');
+				}
+				
 				await page.close();
 			}
 		}
+		
+		console.log('\n=== Финальный отчёт ===');
+		console.log('Успешных откликов: ', globalSuccess);
+		console.log('Опросники: ', globalFail, '\n');
 	}
 	
 	await browser.close();
 }
 
 main()
-	.finally(() => {
-		console.log('\n=== Финальный отчёт ===');
-		console.log('Успешных откликов: ', globalSuccess);
-		console.log('Опросники: ', globalFail);
-	})
 	.catch((e) => {
 		if (!isShuttingDown) {
 			console.error('Фатальная ошибка : ', e);
+			console.log('\n=== Финальный отчёт ===');
+			console.log('Успешных откликов: ', globalSuccess);
+			console.log('Опросники: ', globalFail, '\n');
 		}
 	});

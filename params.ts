@@ -4,5 +4,5 @@ export const COVER_LETTER = 'Здравствуйте, я - Данила Сер�
 	'Работал со всем стеком вакансии, Typescript + React - основной. Работаю со вебом и SEO, умею делать telegram ботов на NodeJS.\n' +
 	'Рассматриваю исключительно удаленный формат работы.\n' +
 	'Оперативно отвечу в telegram - @frontendick'
-// скрывать вакансию после успешного отклика
-export const AUTO_HIDE_SUCCESSFUL_VACANCY = true;
+// скрывать вакансию после обработки
+export const AUTO_HIDE_VACANCY = true;

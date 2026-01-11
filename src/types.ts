@@ -6,9 +6,10 @@ export const STATUSES = {
 export type ResponseStatus = typeof STATUSES[keyof typeof STATUSES];
 
 export type VacancyData = {
-	id: number;
+	link: string;
+	questionnaire: string;
 	position: string;
-	salary: number;
+	salary: string;
 	experience: string;
 	isRemote: boolean;
 }

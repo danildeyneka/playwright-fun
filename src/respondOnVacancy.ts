@@ -1,15 +1,22 @@
 import type { Page } from 'playwright';
-import { AUTO_HIDE_SUCCESSFUL_VACANCY, COVER_LETTER } from '../params.ts';
+import { AUTO_HIDE_VACANCY, COVER_LETTER } from '../params.ts';
 import { sleep } from './sleep.ts';
 import { STATUSES, VacancyResponse } from './types.ts';
 
 // страница открывается для фиксации "живой" активности
 export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	await page.waitForLoadState('domcontentloaded');
+	
+	// подготовка данных о вакансии для опросников
+	const positionPromise = page.locator('h1.bloko-header-section-1').first().textContent().catch(() => '');
+	const salaryPromise = page.locator('div.vacancy-title span').first().textContent().catch(() => '');
+	const experiencePromise = page.locator('[data-qa="work-experience-text"]').first().textContent().catch(() => '');
+	const isRemotePromise = page.locator('[data-qa="work-formats-text"]').first().textContent().catch(() => '');
+	const testTaskPromise = page.locator('div.vacancy-description').first().textContent().catch(() => '');
 	const pageUrl = page.url();
 	
 	// скрываем вакансию если нужно, важно сделать это перед откликом
-	if (!AUTO_HIDE_SUCCESSFUL_VACANCY) {
+	if (AUTO_HIDE_VACANCY) {
 		const moreDataBtn = page.locator('[data-qa="vacancy__more-actions"]').first();
 		await moreDataBtn.waitFor({
 			state: 'visible',
@@ -21,17 +28,6 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 		
 		await page.locator('[data-qa="vacancy__blacklist-menu-add-vacancy"]').first().click({ timeout: 3000 });
 	}
-	
-	// подготовка данных о вакансии для опросников
-	const [position, salary, experience, isRemote, testTask] = await Promise.all([
-		page.locator('div.vacancy-title').first().textContent().catch(() => ''),
-		page.locator('[data-qa="vacancy-salary"]').first().textContent().catch(() => ''),
-		page.locator('[data-qa="work-experience-text"]').first().textContent().catch(() => ''),
-		page.locator('[data-qa="work-formats-text"]').first().textContent().catch(() => ''),
-		page.locator('div.vacancy-description').first().textContent().catch(() => '')
-	]);
-	const id = parseInt(pageUrl);
-	const hasTestTask = testTask.includes('тестово');
 	
 	// откликаемся на вакансию
 	const responseBtn = page.locator(
@@ -49,16 +45,25 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	await otherCountryBtn.click({ force: true, timeout: 500 }).catch(() => false);
 	await sleep();
 	
-	// проверяем на редирект (значит, опросник), сохраняем такие вакансии в отдельный файл для ручного отклика
+	// проверяем на редирект (значит, опросник) и наличие тестового задания, сохраняем такие вакансии в отдельный файл для ручного отклика
 	const redirectedUrl = page.url();
-	console.log(pageUrl, redirectedUrl);
+	const hasTestTask = await testTaskPromise.then(res => res.includes('тестово'));
+	
 	if (pageUrl !== redirectedUrl && !hasTestTask) {
+		const [position, salary, experience, isRemote] = await Promise.all([
+			positionPromise,
+			salaryPromise,
+			experiencePromise,
+			isRemotePromise
+		]);
+		
 		return {
 			status: STATUSES.FAILURE,
 			data: {
-				id,
+				link: pageUrl,
+				questionnaire: redirectedUrl,
 				position,
-				salary: parseInt(salary),
+				salary: salary,
 				experience,
 				isRemote: isRemote.includes('удалённо')
 			}
@@ -86,23 +91,3 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 		status: STATUSES.SUCCESS
 	};
 }
-
-// export async function respondToVacancy(context: BrowserContext, url: string): Promise<VacancyResponse> {
-// 	const page = await context.newPage();
-// 	let response: VacancyResponse;
-//
-// 	try {
-// 		await page.goto(url, {
-// 			waitUntil: 'domcontentloaded',
-// 			timeout: 5000
-// 		});
-// 		response = await respond(page);
-// 	} catch (e) {
-// 		console.log('Неизвестная ошибка - ', e);
-// 	} finally {
-// 		await page.close();
-// 	}
-// 	console.log('Завершена обработка вакансии - возвращаю статус - ' + response.status);
-//
-// 	return response;
-// }
