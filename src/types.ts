@@ -18,3 +18,5 @@ export type VacancyResponse = {
 	status: ResponseStatus;
 	data?: VacancyData;
 }
+
+export const LIMIT_EXCEEDED = 'Превышен лимит откликов. Запустите скрипт позже'

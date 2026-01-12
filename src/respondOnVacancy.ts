@@ -1,7 +1,7 @@
 import type { Page } from 'playwright';
 import { AUTO_HIDE_VACANCY, COVER_LETTER } from '../params.ts';
 import { sleep } from './sleep.ts';
-import { STATUSES, VacancyResponse } from './types.ts';
+import { LIMIT_EXCEEDED, STATUSES, VacancyResponse } from './types.ts';
 
 // страница открывается для фиксации "живой" активности
 export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
@@ -35,7 +35,7 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	).first();
 	
 	if (!(await responseBtn.isVisible({ timeout: 3000 }))) {
-		process.exit('Кнопка отклика не найдена, проверь селекторы сверху');
+		return { status: STATUSES.FAILURE };
 	}
 	await responseBtn.click();
 	await sleep();
@@ -75,6 +75,8 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	await coverLetterInput.waitFor({
 		state: 'visible',
 		timeout: 1500
+	}).catch(() => {
+		throw new Error(LIMIT_EXCEEDED);
 	});
 	await coverLetterInput.fill(COVER_LETTER);
 	await sleep();

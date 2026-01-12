@@ -7,11 +7,11 @@ import { checkEnv } from '../src/checkEnv.ts';
 import { getTimeStamp } from '../src/getTimeStamp.ts';
 import { getVacanciesList } from '../src/getVacanciesList.ts';
 import { respondOnVacancy } from '../src/respondOnVacancy.ts';
-import { STATUSES } from '../src/types.ts';
+import { LIMIT_EXCEEDED, STATUSES } from '../src/types.ts';
 
 let globalSuccess = 0;
 let globalFail = 0;
-let isShuttingDown = false;
+const manualVacancies = [{dsa: 'ads'}];
 
 async function main() {
 	checkEnv();
@@ -23,17 +23,8 @@ async function main() {
 	});
 	const page = await context.newPage();
 	
-	process.on('SIGINT', async () => {
-		isShuttingDown = true;
-		console.log('\nОстановка скрипта...');
-		await browser.close();
-		process.exit(0);
-	});
-	
 	// Проверка авторизации
 	await checkAuth(page, browser);
-	
-	const manualVacancies = [];
 	
 	// максимально откликнуться можно 200 раз, парсим страницы с учетом вакансий-опросников
 	for (let i = 1; i < 4; i++) {
@@ -60,16 +51,19 @@ async function main() {
 				});
 				const response = await respondOnVacancy(page);
 				
-				if (response.status === STATUSES.FAILURE) {
-					manualVacancies.push(response.data);
-					
-					globalFail++;
+				if (response.status === STATUSES.FAILURE && response.data) {
+						// @ts-ignore
+						manualVacancies.push(response.data);
+						globalFail++;
 				} else {
 					globalSuccess++;
 				}
 				
 			} catch (e) {
-				if (!isShuttingDown) console.log('Неизвестная ошибка - ', e);
+				if (e.message === LIMIT_EXCEEDED) {
+					process.exit(LIMIT_EXCEEDED);
+				}
+				console.log('Неизвестная ошибка - ', e);
 			} finally {
 				await page.close();
 			}
@@ -77,23 +71,25 @@ async function main() {
 		
 		await page.reload();
 	}
-	
+
+	await browser.close();
+}
+
+main()
+	.catch(async (e) => {
+		console.error('Фатальная ошибка : ', e);
+	}).finally(async () => {
+		await exit();
+});
+
+async function exit() {
+	console.log('\n=== Финальный отчёт ===');
+	console.log('Успешных откликов: ', globalSuccess);
+	console.log('Опросники: ', globalFail, '\n');
 	if (manualVacancies.length) {
 		const date = getTimeStamp();
 		await fs.mkdir(path.join(process.cwd(), 'manual'), { recursive: true });
 		const outputPath = path.join(process.cwd(), 'manual', `list-${date}.json`);
 		await fs.writeFile(outputPath, JSON.stringify(manualVacancies, null, 2), 'utf-8');
 	}
-	await browser.close();
 }
-
-main()
-	.catch((e) => {
-		if (!isShuttingDown) {
-			console.error('Фатальная ошибка : ', e);
-		}
-	}).finally(() => {
-	console.log('\n=== Финальный отчёт ===');
-	console.log('Успешных откликов: ', globalSuccess);
-	console.log('Опросники: ', globalFail, '\n');
-});
