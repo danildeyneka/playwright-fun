@@ -2,6 +2,7 @@ import * as fs from 'fs/promises';
 import * as path from 'node:path';
 import { chromium } from 'playwright';
 import { VACANCIES_LIST } from '../params';
+import { checkAuth } from '../src/checkAuth.ts';
 import { checkEnv } from '../src/checkEnv.ts';
 import { getTimeStamp } from '../src/getTimeStamp.ts';
 import { getVacanciesList } from '../src/getVacanciesList.ts';
@@ -30,7 +31,7 @@ async function main() {
 	});
 	
 	// Проверка авторизации
-	// await checkAuth(page, browser)
+	await checkAuth(page, browser)
 	
 	const manualVacancies = [];
 	
