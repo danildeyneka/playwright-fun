@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'node:path';
 import { chromium } from 'playwright';
-import { VACANCIES_LIST } from '../params';
+import { AUTO_HIDE_VACANCY, VACANCIES_LIST } from '../params';
 import { checkAuth } from '../src/checkAuth.ts';
 import { checkEnv } from '../src/checkEnv.ts';
 import { getTimeStamp } from '../src/getTimeStamp.ts';
@@ -31,13 +31,13 @@ async function main() {
 	});
 	
 	// Проверка авторизации
-	await checkAuth(page, browser)
+	await checkAuth(page, browser);
 	
 	const manualVacancies = [];
 	
 	// максимально откликнуться можно 200 раз, парсим страницы с учетом вакансий-опросников
-	for (let i = 0; i < 3; i++) {
-		const searchUrl = `${VACANCIES_LIST}&items_on_page=100`;
+	for (let i = 1; i < 4; i++) {
+		const searchUrl = `${VACANCIES_LIST}&items_on_page=100${!AUTO_HIDE_VACANCY ? ('&page=' + i) : ''}`;
 		
 		await page.goto(searchUrl, {
 			waitUntil: 'domcontentloaded',
