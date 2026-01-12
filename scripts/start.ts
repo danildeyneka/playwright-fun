@@ -11,7 +11,7 @@ import { LIMIT_EXCEEDED, STATUSES } from '../src/types.ts';
 
 let globalSuccess = 0;
 let globalFail = 0;
-const manualVacancies = [{dsa: 'ads'}];
+const manualVacancies = [];
 
 async function main() {
 	checkEnv();
@@ -52,7 +52,6 @@ async function main() {
 				const response = await respondOnVacancy(page);
 				
 				if (response.status === STATUSES.FAILURE && response.data) {
-						// @ts-ignore
 						manualVacancies.push(response.data);
 						globalFail++;
 				} else {
@@ -61,7 +60,9 @@ async function main() {
 				
 			} catch (e) {
 				if (e.message === LIMIT_EXCEEDED) {
-					process.exit(LIMIT_EXCEEDED);
+					console.log(LIMIT_EXCEEDED);
+					await exit();
+					process.exit(0);
 				}
 				console.log('Неизвестная ошибка - ', e);
 			} finally {
