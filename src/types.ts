@@ -1,6 +1,6 @@
 export const STATUSES = {
 	SUCCESS: 'success',
-	FAILURE: 'failure',
+	FAILURE: 'failure'
 };
 
 export type ResponseStatus = typeof STATUSES[keyof typeof STATUSES];
@@ -19,4 +19,4 @@ export type VacancyResponse = {
 	data?: VacancyData;
 }
 
-export const LIMIT_EXCEEDED = 'Превышен лимит откликов. Запустите скрипт позже'
+export const LIMIT_EXCEEDED = 'Превышен лимит откликов. Запустите скрипт позже';
