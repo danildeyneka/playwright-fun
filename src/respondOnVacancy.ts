@@ -9,7 +9,7 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	
 	// подготовка данных о вакансии для опросников
 	const positionPromise = page.locator('h1.bloko-header-section-1').first().textContent().catch(() => '');
-	const salaryPromise = page.locator('div.vacancy-title span').first().textContent().catch(() => '');
+	const salaryPromise = page.locator('div.vacancy-salary span').first().textContent().catch(() => '');
 	const experiencePromise = page.locator('[data-qa="work-experience-text"]').first().textContent().catch(() => '');
 	const isRemotePromise = page.locator('[data-qa="work-formats-text"]').first().textContent().catch(() => '');
 	const testTaskPromise = page.locator('div.vacancy-description').first().textContent().catch(() => '');
@@ -75,8 +75,6 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	await coverLetterInput.waitFor({
 		state: 'visible',
 		timeout: 1500
-	}).catch(() => {
-		throw new Error(LIMIT_EXCEEDED);
 	});
 	await coverLetterInput.fill(COVER_LETTER);
 	await sleep();
@@ -85,6 +83,8 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	await coverLetterBtn.waitFor({
 		state: 'visible',
 		timeout: 1500
+	}).catch(() => {
+		throw new Error(LIMIT_EXCEEDED);
 	});
 	await coverLetterBtn.click();
 	await sleep();

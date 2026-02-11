@@ -16,7 +16,7 @@ const manualVacancies = [];
 async function main() {
 	checkEnv();
 	
-	const browser = await chromium.launch({ headless: false });
+	const browser = await chromium.launch({ headless: true });
 	const context = await browser.newContext({
 		storageState: 'hh-state.json',
 		viewport: { width: 1366, height: 768 }
@@ -56,6 +56,7 @@ async function main() {
 						globalFail++;
 				} else {
 					globalSuccess++;
+					console.log('Успешных откликов - ', globalSuccess);
 				}
 				
 			} catch (e) {
@@ -64,7 +65,7 @@ async function main() {
 					await exit();
 					process.exit(0);
 				}
-				console.log('Неизвестная ошибка - ', e);
+				console.log('Неизвестная ошибка - ', e?.message);
 			} finally {
 				await page.close();
 			}
