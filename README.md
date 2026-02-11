@@ -44,4 +44,4 @@ npm run renew-cookie
 - развернуть в тг бота
 
 
-<details><summary>P.S.</summary> бороться и автоотказами можно только автооткликами</details>
+<details><summary>P.S.</summary> бороться с автоотказами можно только автооткликами</details>
