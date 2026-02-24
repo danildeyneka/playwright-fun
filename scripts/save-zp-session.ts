@@ -1,3 +1,5 @@
 import { saveSession } from './shared/save-session.ts';
 
-saveSession();
+const isZarplataRu = true;
+
+saveSession(isZarplataRu);

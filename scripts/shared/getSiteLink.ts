@@ -1,0 +1,1 @@
+export const getSiteLink = (isZarplataRu?: boolean) => `https://${isZarplataRu ? 'zarplata' : 'hh'}.ru`;

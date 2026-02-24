@@ -1,6 +1,7 @@
 import type { Page } from 'playwright';
+import { getSiteLink } from '../scripts/shared/getSiteLink.ts';
 
-export async function getVacanciesList(page: Page): Promise<string[]> {
+export async function getVacanciesList(page: Page, isZarplataRu?: boolean): Promise<string[]> {
 	const items = page.locator(
 		'[data-qa="vacancy-serp__vacancy"] a[data-qa="serp-item__title"]'
 	);
@@ -15,7 +16,7 @@ export async function getVacanciesList(page: Page): Promise<string[]> {
 		if (href.startsWith('http')) {
 			urls.push(href);
 		} else {
-			urls.push('https://hh.ru' + href);
+			urls.push(getSiteLink(isZarplataRu) + href);
 		}
 	}
 	

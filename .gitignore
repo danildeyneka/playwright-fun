@@ -18,4 +18,5 @@ logs
 .DS_Store
 
 hh-state.json
+zp-state.json
 manual

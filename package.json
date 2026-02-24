@@ -1,6 +1,6 @@
 {
   "name": "auto-hh",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": "Danila Deyneka",
   "description": "Скрипт для автооткликов на hh",
   "main": "scripts/start.ts",
@@ -8,8 +8,11 @@
   "private": true,
   "scripts": {
     "init": "npx playwright install && $npm_execpath run renew-cookie && $npm_execpath run start",
+    "init-zp": "npx playwright install && $npm_execpath run renew-cookie-zp && $npm_execpath run start-zp",
     "renew-cookie": "node --loader ts-node/esm scripts/save-hh-session.ts && $npm_execpath run start",
-    "start": "node --loader ts-node/esm scripts/start.ts"
+    "renew-cookie-zp": "node --loader ts-node/esm scripts/save-zp-session.ts && $npm_execpath run start-zp",
+    "start": "node --loader ts-node/esm scripts/start.ts",
+    "start-zp": "node --loader ts-node/esm scripts/start-zp.ts"
   },
   "devDependencies": {
     "@types/node": "^25.0.3",

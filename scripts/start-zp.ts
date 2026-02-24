@@ -1,3 +1,5 @@
 import { run } from './shared/common-start.ts';
 
-run();
+const isZarplataRu = true;
+
+run(isZarplataRu);
