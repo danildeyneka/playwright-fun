@@ -6,8 +6,8 @@ export const checkAuth = async (page: Page, browser: Browser, isZarplataRu?: boo
 		waitUntil: 'domcontentloaded',
 		timeout: 3000,
 	})
-	
-	await page.locator('[data-qa="profileAndResumes-button"]').waitFor({state: 'visible', timeout: 3000}).catch(async () => {
+	// await page.locator('[data-qa="profileAndResumes-button"]').waitFor({state: 'visible', timeout: 3000})
+		.catch(async () => {
 		console.log('Ошибка авторизации! Запустите скрипт renew-cookie');
 		await browser.close();
 		process.exit(1);
