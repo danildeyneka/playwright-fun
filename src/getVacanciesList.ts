@@ -3,7 +3,7 @@ import { getSiteLink } from '../scripts/shared/getSiteLink.ts';
 
 export async function getVacanciesList(page: Page, isZarplataRu?: boolean): Promise<string[]> {
 	const items = page.locator(
-		'[data-qa="vacancy-serp__vacancy"] a[data-qa="serp-item__title"]'
+		'[data-qa="vacancy-serp__results"] [data-qa="vacancy-serp__vacancy"] a[data-qa="serp-item__title"]'
 	);
 	const count = await items.count();
 	const urls: string[] = [];
