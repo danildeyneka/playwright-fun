@@ -51,7 +51,8 @@ export async function run(isZarplataRu?: boolean) {
 			const vacancyUrls = await getVacanciesList(page, isZarplataRu);
 			
 			if (vacancyUrls.length === 0) {
-				process.exit('Вакансий больше не осталось. Запустите скрипт позднее');
+				console.log('Вакансий больше не осталось. Запустите скрипт позднее');
+				process.exit(1);
 			}
 			
 			for (const vUrl of vacancyUrls) {
