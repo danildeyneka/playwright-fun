@@ -7,3 +7,5 @@ export const COVER_LETTER = 'Здравствуйте, я - Данила Сер�
 	'Telegram - @frontendick'
 // скрывать вакансию после обработки
 export const AUTO_HIDE_VACANCY = true;
+// eng/rus ключевые слова должности в названии вакансии
+export const VACANCY_TITLE_FILTER = 'frontend,фронтенд,react,реакт'
