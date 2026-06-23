@@ -4,7 +4,7 @@ import { getSiteLink } from '../scripts/shared/getSiteLink.ts';
 export const checkAuth = async (page: Page, browser: Browser, isZarplataRu?: boolean) => {
 	await page.goto(`${getSiteLink(isZarplataRu)}/profile/me`, {
 		waitUntil: 'domcontentloaded',
-		timeout: 3000,
+		timeout: 5000,
 	})
 	await page.locator('[data-qa="profileAndResumes-button"]').waitFor({state: 'visible', timeout: 3000})
 		.catch(async () => {
