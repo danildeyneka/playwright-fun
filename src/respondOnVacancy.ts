@@ -9,7 +9,7 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	
 	// подготовка данных о вакансии для опросников
 	const positionPromise = page.locator('h1.bloko-header-section-1').first().textContent().catch(() => '');
-	const salaryPromise = page.locator('div.vacancy-salary span').first().textContent().catch(() => '');
+	const salaryPromise = page.locator('div.vacancy-title span').first().textContent().catch(() => '');
 	const experiencePromise = page.locator('[data-qa="work-experience-text"]').first().textContent().catch(() => '');
 	const isRemotePromise = page.locator('[data-qa="work-formats-text"]').first().textContent().catch(() => '');
 	const testTaskPromise = page.locator('div.vacancy-description').first().textContent().catch(() => '');
@@ -70,6 +70,14 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 		};
 	}
 	
+	// ищем кнопку сопровода если нет текстареа
+	const coverLetterBtnExtra = page.locator('[data-qa="responded-success-attach-cover-letter-text"]').first();
+	await coverLetterBtnExtra.waitFor({
+		state: 'visible',
+		timeout: 1500
+	});
+	await coverLetterBtnExtra.click();
+	
 	// заполняем и отправляем сопровод
 	const coverLetterInput = page.locator('[data-qa="textarea-native-wrapper"] textarea').first();
 	await coverLetterInput.waitFor({
@@ -82,7 +90,7 @@ export async function respondOnVacancy(page: Page): Promise<VacancyResponse> {
 	const coverLetterBtn = page.locator('[data-qa="vacancy-response-letter-submit"], [data-qa="vacancy-response-submit-popup"]').first();
 	await coverLetterBtn.waitFor({
 		state: 'visible',
-		timeout: 1500
+		timeout: 2500
 	}).catch(() => {
 		throw new Error(LIMIT_EXCEEDED);
 	});
